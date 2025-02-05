@@ -44,7 +44,7 @@ npm run dev
 
 ## CSV Guide
 
-To create your game questions, download the Jeopardy_Template file from the CSV upload screen in the app and populate it with the instructions below or prepare a CSV file from scratch with the following structure:
+To create your game questions, EITHER download the Jeopardy_Template file (from the CSV upload screen in the app) and populate it with your data as per the instructions below OR prepare a CSV file from scratch with the following structure:
 
 ### Format:
 - Row 1: Category names (any number of columns)

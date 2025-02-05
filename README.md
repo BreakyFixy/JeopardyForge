@@ -42,9 +42,9 @@ npm run dev
 
 4. Open your browser and navigate to `http://localhost:5173`
 
-## CSV Format Guide
+## CSV Guide
 
-To create your game questions, prepare a CSV file with the following structure:
+To create your game questions, download the Jeopardy_Template file from the CSV upload screen in the app and populate it with the instructions below or prepare a CSV file from scratch with the following structure:
 
 ### Format:
 - Row 1: Category names (any number of columns)

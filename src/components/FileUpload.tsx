@@ -388,6 +388,17 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
                 <li className="ml-8 text-base">2. Answer text for each category</li>
                 <li className="ml-8 text-base">3. Include an Image URL or type the word "none" in the cell</li>
               </ul>
+              <div className="mt-6 text-[#EDF2EF] text-base">
+                OR you can download the Game Template CSV file by clicking{' '}
+                <a 
+                  href="public/Jeopardy_Upload_Template.csv" 
+                  download
+                  className="text-[#FFB411] hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  here
+                </a>
+              </div>
             </div>
             
             <input

@@ -53,8 +53,13 @@ To create your game questions, prepare a CSV file with the following structure:
   2. Answer text for each category
   3. Image URL or "none" for each category
 
-### CSV Template:
-You can use the provided Template CSV to easily add your own content in the correct format.
+### Example CSV:
+```csv
+History,Science,Literature
+Who was the first U.S. President?,What is H2O?,Who wrote Romeo and Juliet?
+George Washington,Water,William Shakespeare
+none,https://example.com/water.jpg,none
+```
 
 ## Playing the Game
 

@@ -42,9 +42,10 @@ npm run dev
 
 4. Open your browser and navigate to `http://localhost:5173`
 
-## CSV Format Guide
+## CSV Guide
 
-To create your game questions, prepare a CSV file with the following structure:
+You can download a CSV Template to use (from the CSV upload screen in the app).
+You can also create your CSV file from scratch with the following structure:
 
 ### Format:
 - Row 1: Category names (any number of columns)

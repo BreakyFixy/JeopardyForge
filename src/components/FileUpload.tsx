@@ -1,4 +1,4 @@
-import { react, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Upload, X } from 'lucide-react';
 import { Question } from '../types/game';
 
@@ -66,7 +66,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
     if (!url || url.trim() === '' || isNoneValue(url)) return true;
     
     try {
-         return true;
+      await fetch(url, { 
+        method: 'HEAD',
+        mode: 'no-cors' // This allows the request but limits what we can check
+      });
+      return true;
     } catch {
       // If HEAD request fails, we'll fall back to the URL pattern validation
       return false;
@@ -387,7 +391,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
               <div className="mt-6 text-[#EDF2EF] text-base">
                 OR you can download the Game Template CSV file by clicking{' '}
                 <a 
-                  href="public/Jeopardy_Upload_Template.csv" 
+                  href="/Jeopardy_Upload_Template.csv" 
                   download
                   className="text-[#FFB411] hover:underline"
                   onClick={(e) => e.stopPropagation()}

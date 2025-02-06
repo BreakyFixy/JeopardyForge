@@ -4,7 +4,6 @@ import { Trash2 } from 'lucide-react';
 
 interface TeamPanelProps {
   teams: Team[];
-  onScoreChange: (teamId: string, change: number) => void;
   onTeamNameChange: (teamId: string, newName: string) => void;
   onTeamDelete: (teamId: string) => void;
   onAddTeam: () => void;

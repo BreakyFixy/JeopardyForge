@@ -45,6 +45,7 @@ npm run dev
 ## CSV Guide
 
 You can download a CSV Template to use (from the CSV upload screen in the app).
+
 You can also create your CSV file from scratch with the following structure:
 
 ### Format:

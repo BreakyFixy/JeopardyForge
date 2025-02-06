@@ -22,6 +22,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
   const [parsedQuestions, setParsedQuestions] = useState<Question[] | null>(null);
   const [error, setError] = useState<ValidationError | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = useRef(0);
 
   const isNoneValue = (url: string): boolean => {
     return url.trim().toLowerCase() === 'none';
@@ -33,32 +34,29 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
     try {
       const urlObj = new URL(url);
       
-      // Check for common image extensions
       const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
       const hasImageExtension = imageExtensions.some(ext => 
         urlObj.pathname.toLowerCase().endsWith(ext)
       );
 
-      // Check for common image hosting patterns
       const imageHostingPatterns = [
         /imgur\.com/,
         /\.cloudinary\.com/,
         /images\.unsplash\.com/,
         /\.googleusercontent\.com/,
         /\.amazonaws\.com.*\.(jpg|jpeg|png|gif|webp|bmp|svg)/i,
-        /\.(jpg|jpeg|png|gif|webp|bmp|svg)\?/i, // URLs with query parameters
+        /\.(jpg|jpeg|png|gif|webp|bmp|svg)\?/i,
       ];
       
       const matchesHostingPattern = imageHostingPatterns.some(pattern => 
         pattern.test(url)
       );
 
-      // Check for data URLs
       const isDataUrl = url.startsWith('data:image/');
 
       return hasImageExtension || matchesHostingPattern || isDataUrl;
     } catch {
-      return false; // Invalid URL format
+      return false;
     }
   };
 
@@ -68,11 +66,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
     try {
       await fetch(url, { 
         method: 'HEAD',
-        mode: 'no-cors' // This allows the request but limits what we can check
+        mode: 'no-cors'
       });
       return true;
     } catch {
-      // If HEAD request fails, we'll fall back to the URL pattern validation
       return false;
     }
   };
@@ -80,18 +77,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
   const validateImageUrl = async (url: string): Promise<boolean> => {
     if (!url || url.trim() === '' || isNoneValue(url)) return true;
     
-    // First check if it's a valid URL format with image patterns
     if (!isValidImageUrl(url)) {
       return false;
     }
 
     try {
-      // Try HEAD request as a secondary validation
-      // But don't fail if it doesn't work (due to CORS)
       await tryImageHeadRequest(url);
       return true;
     } catch {
-      // If the HEAD request fails, still return true if the URL pattern was valid
       return isValidImageUrl(url);
     }
   };
@@ -106,11 +99,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
       return { message: 'No valid categories found in the header row.' };
     }
 
-    // Filter out empty lines before checking the structure
     const nonEmptyLines = lines.filter(line => line.trim().length > 0);
     const dataRows = nonEmptyLines.slice(1);
 
-    // Check if we have complete sets of three rows (question, answer, image)
     if (dataRows.length % 3 !== 0) {
       return {
         message: 'Invalid CSV format.',
@@ -125,7 +116,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
 
     const errors: string[] = [];
 
-    // Validate each row has the correct number of columns
     for (let i = 0; i < dataRows.length; i++) {
       const row = dataRows[i].split(',').map(cell => cell.trim());
       if (row.length !== categories.length) {
@@ -133,7 +123,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
       }
     }
 
-    // Validate image URLs (only if they're not empty or 'none')
     const imageRows = dataRows.filter((_, index) => index % 3 === 2);
     for (let i = 0; i < imageRows.length; i++) {
       const urls = imageRows[i].split(',').map(url => url.trim());
@@ -144,7 +133,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
       }
     }
 
-    // Check for empty questions or answers (but not image URLs)
     const questionRows = dataRows.filter((_, index) => index % 3 === 0);
     const answerRows = dataRows.filter((_, index) => index % 3 === 1);
     
@@ -182,13 +170,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
     const categories = lines[0].split(',').map(cat => cat.trim());
     const questions: Question[] = [];
     
-    // Process sets of three lines (question, answer, image)
     for (let i = 1; i < lines.length; i += 3) {
       const questionRow = lines[i]?.split(',').map(q => q.trim());
       const answerRow = lines[i + 1]?.split(',').map(a => a.trim());
       const imageRow = lines[i + 2]?.split(',').map(img => img.trim());
       
-      // Skip if we don't have complete question and answer rows
       if (!questionRow || !answerRow) break;
 
       const rowIndex = Math.floor((i - 1) / 3);
@@ -276,25 +262,34 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
   };
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
+    
+    dragCounter.current += 1;
+    if (dragCounter.current === 1) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
+    
+    dragCounter.current -= 1;
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+    }
   };
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    
     setIsDragging(false);
+    dragCounter.current = 0;
 
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 1) {

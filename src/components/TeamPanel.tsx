@@ -1,6 +1,6 @@
 import React from 'react';
 import { Team } from '../types/game';
-import { Trash2, Squircle } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 interface TeamPanelProps {
   teams: Team[];
@@ -12,7 +12,6 @@ interface TeamPanelProps {
 
 const TeamPanel: React.FC<TeamPanelProps> = ({
   teams,
-  onScoreChange,
   onTeamNameChange,
   onTeamDelete,
   onAddTeam,

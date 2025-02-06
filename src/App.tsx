@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './index.css';
 import GameBoard from './components/GameBoard';
 import QuestionModal from './components/QuestionModal';

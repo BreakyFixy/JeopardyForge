@@ -6,7 +6,7 @@ import TeamPanel from './components/TeamPanel';
 import FileUpload from './components/FileUpload';
 import TeamSetup from './components/TeamSetup';
 import { Question, Team, GameState } from './types/game';
-import { Settings, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 
 const DEFAULT_GAME_STATE: GameState = {
   teams: [],
@@ -99,15 +99,7 @@ function App() {
     }));
   };
 
-  const toggleSound = () => {
-    setGameState((prev) => ({
-      ...prev,
-      settings: {
-        ...prev.settings,
-        soundEnabled: !prev.settings.soundEnabled,
-      },
-    }));
-  };
+  
 
   const handleTitleChange = (newTitle: string) => {
     setGameState((prev) => ({
@@ -150,30 +142,16 @@ function App() {
           </div>
           <div className="flex-1 flex justify-end gap-4">
             {gamePhase !== 'upload' && (
-              <button
-                onClick={handleRestart}
-                className="p-2 rounded-full hover:bg-[#132F5F] transition-colors"
-                title="Restart Game"
-              >
-                <RotateCcw size={24} />
-              </button>
+              <>
+                <button
+                  onClick={handleRestart}
+                  className="p-2 rounded-full hover:bg-[#132F5F] transition-colors"
+                  title="Restart Game"
+                >
+                  <RotateCcw size={24} />
+                </button>
+                </>
             )}
-            <button
-              onClick={toggleSound}
-              className="p-2 rounded-full hover:bg-[#132F5F] transition-colors"
-            >
-              {gameState.settings.soundEnabled ? (
-                <Volume2 size={24} />
-              ) : (
-                <VolumeX size={24} />
-              )}
-            </button>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 rounded-full hover:bg-[#132F5F] transition-colors"
-            >
-              <Settings size={24} />
-            </button>
           </div>
         </div>
       </div>

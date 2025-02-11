@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Team } from '../types/game';
 import { Plus, Trash2 } from 'lucide-react';
 
@@ -11,6 +11,7 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
     { id: '1', name: 'Team 1', score: 0 },
     { id: '2', name: 'Team 2', score: 0 },
   ]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const addTeam = () => {
     const newTeam: Team = {
@@ -36,6 +37,15 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
       alert('Please add at least one team to start the game.');
       return;
     }
+
+    // Play the theme song
+    if (audioRef.current) {
+      audioRef.current.play().catch(error => {
+        console.warn('Audio playback failed:', error);
+      });
+    }
+
+    // Start the game immediately without waiting for audio
     onComplete(teams);
   };
 
@@ -79,6 +89,12 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
           Start Game
         </button>
       </div>
+
+      <audio
+        ref={audioRef}
+        src="Sounds/this-is-jeopardy-1992-101soundboards.mp3"
+        preload="auto"
+      />
     </div>
   );
 };

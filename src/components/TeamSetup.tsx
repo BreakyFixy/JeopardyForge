@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Team } from '../types/game';
 import { Plus, Trash2 } from 'lucide-react';
 
@@ -11,7 +11,6 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
     { id: '1', name: 'Team 1', score: 0 },
     { id: '2', name: 'Team 2', score: 0 },
   ]);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const addTeam = () => {
     const newTeam: Team = {
@@ -32,54 +31,16 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
     ));
   };
 
-  const playStartSound = async () => {
-    try {
-      if (audioRef.current) {
-        // Reset the audio to the start
-        audioRef.current.currentTime = 0;
-        
-        // Try to play the sound
-        await audioRef.current.play();
-      }
-    } catch (error) {
-      console.error('Error playing audio:', error);
-    }
-  };
-
-  const handleStart = async () => {
+  const handleStart = () => {
     if (teams.length < 1) {
       alert('Please add at least one team to start the game.');
       return;
     }
-
-    try {
-      // First, try to load the audio
-      if (audioRef.current) {
-        await audioRef.current.load();
-      }
-
-      // Start the game
-      onComplete(teams);
-
-      // Play the sound after a brief delay to ensure smooth transition
-      setTimeout(() => {
-        playStartSound();
-      }, 100);
-    } catch (error) {
-      console.error('Error during game start:', error);
-      // Still start the game even if audio fails
-      onComplete(teams);
-    }
+    onComplete(teams);
   };
 
   return (
     <div className="max-w-2xl mx-auto p-8">
-      <audio
-        ref={audioRef}
-        src="/Sounds/this-is-jeopardy-1992-101soundboards.mp3"
-        preload="auto"
-      />
-      
       <h2 className="text-3xl font-bold mb-8 text-center text-[#EDF2EF]">Set Up Teams</h2>
       
       <div className="space-y-4 mb-8">

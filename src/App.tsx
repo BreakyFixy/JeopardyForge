@@ -24,6 +24,7 @@ const DEFAULT_GAME_STATE: GameState = {
 function App() {
   const [gameState, setGameState] = useState<GameState>(DEFAULT_GAME_STATE);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   const [gamePhase, setGamePhase] = useState<'upload' | 'setup' | 'play'>('upload');
 
   useEffect(() => {
@@ -97,6 +98,8 @@ function App() {
       teams: prev.teams.filter((team) => team.id !== teamId),
     }));
   };
+
+  
 
   const handleTitleChange = (newTitle: string) => {
     setGameState((prev) => ({

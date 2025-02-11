@@ -120,7 +120,7 @@ function App() {
         {gamePhase === 'upload' && (
           <div className="w-full max-w-4xl mb-8">
             <img
-              src="https://ntglsc.pages.dev/images/banner.png"
+              src="images/LSCBanner.png"
               alt="Jeopardy Banner"
               className="w-full h-auto object-cover rounded-lg shadow-lg"
               style={{ maxHeight: '200px' }}

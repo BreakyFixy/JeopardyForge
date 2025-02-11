@@ -12,7 +12,6 @@ JeopardyForge is an interactive web application that allows users to create and 
 - 💾 Automatic game state saving
 - 🎯 Easy-to-use CSV upload for game content
 - 🎨 Modern, responsive design
-- 🔊 Toggle-able sound effects
 - ✏️ Editable team names and game title
 
 ## Getting Started
@@ -44,8 +43,7 @@ npm run dev
 
 ## CSV Guide
 
-You can download a CSV Template to use (from the CSV upload screen in the app).
-You can also create your CSV file from scratch with the following structure:
+To create your game questions, prepare a CSV file with the following structure OR download the template file and fill it in:
 
 ### Format:
 - Row 1: Category names (any number of columns)

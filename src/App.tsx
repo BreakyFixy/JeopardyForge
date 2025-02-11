@@ -24,7 +24,6 @@ const DEFAULT_GAME_STATE: GameState = {
 function App() {
   const [gameState, setGameState] = useState<GameState>(DEFAULT_GAME_STATE);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
   const [gamePhase, setGamePhase] = useState<'upload' | 'setup' | 'play'>('upload');
 
   useEffect(() => {
@@ -99,8 +98,6 @@ function App() {
     }));
   };
 
-  
-
   const handleTitleChange = (newTitle: string) => {
     setGameState((prev) => ({
       ...prev,
@@ -123,7 +120,7 @@ function App() {
         {gamePhase === 'upload' && (
           <div className="w-full max-w-4xl mb-8">
             <img
-              src="images/LSCBanner.png"
+              src="https://ntglsc.pages.dev/images/banner.png"
               alt="Jeopardy Banner"
               className="w-full h-auto object-cover rounded-lg shadow-lg"
               style={{ maxHeight: '200px' }}

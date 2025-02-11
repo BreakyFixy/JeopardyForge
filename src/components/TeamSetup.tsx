@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Team } from '../types/game';
 import { Plus, Trash2 } from 'lucide-react';
 
@@ -11,6 +11,7 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
     { id: '1', name: 'Team 1', score: 0 },
     { id: '2', name: 'Team 2', score: 0 },
   ]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const addTeam = () => {
     const newTeam: Team = {
@@ -31,16 +32,37 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
     ));
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (teams.length < 1) {
       alert('Please add at least one team to start the game.');
       return;
     }
-    onComplete(teams);
+
+    try {
+      if (audioRef.current) {
+        await audioRef.current.play();
+        // Wait for the audio to finish before transitioning
+        audioRef.current.onended = () => {
+          onComplete(teams);
+        };
+      } else {
+        onComplete(teams);
+      }
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      // Fallback: proceed with game start even if audio fails
+      onComplete(teams);
+    }
   };
 
   return (
     <div className="max-w-2xl mx-auto p-8">
+      <audio
+        ref={audioRef}
+        src="/Sounds/this-is-jeopardy-1992-101soundboards.mp3"
+        preload="auto"
+      />
+      
       <h2 className="text-3xl font-bold mb-8 text-center text-[#EDF2EF]">Set Up Teams</h2>
       
       <div className="space-y-4 mb-8">

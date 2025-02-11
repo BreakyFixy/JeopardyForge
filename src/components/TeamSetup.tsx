@@ -32,26 +32,24 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
     ));
   };
 
-  const handleStart = async () => {
+  const handleStart = () => {
     if (teams.length < 1) {
       alert('Please add at least one team to start the game.');
       return;
     }
 
+    // Start the game immediately
+    onComplete(teams);
+
+    // Play the sound in the background
     try {
       if (audioRef.current) {
-        await audioRef.current.play();
-        // Wait for the audio to finish before transitioning
-        audioRef.current.onended = () => {
-          onComplete(teams);
-        };
-      } else {
-        onComplete(teams);
+        audioRef.current.play().catch(error => {
+          console.error('Error playing audio:', error);
+        });
       }
     } catch (error) {
       console.error('Error playing audio:', error);
-      // Fallback: proceed with game start even if audio fails
-      onComplete(teams);
     }
   };
 

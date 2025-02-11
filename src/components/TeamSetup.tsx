@@ -32,24 +32,43 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
     ));
   };
 
-  const handleStart = () => {
+  const playStartSound = async () => {
+    try {
+      if (audioRef.current) {
+        // Reset the audio to the start
+        audioRef.current.currentTime = 0;
+        
+        // Try to play the sound
+        await audioRef.current.play();
+      }
+    } catch (error) {
+      console.error('Error playing audio:', error);
+    }
+  };
+
+  const handleStart = async () => {
     if (teams.length < 1) {
       alert('Please add at least one team to start the game.');
       return;
     }
 
-    // Start the game immediately
-    onComplete(teams);
-
-    // Play the sound in the background
     try {
+      // First, try to load the audio
       if (audioRef.current) {
-        audioRef.current.play().catch(error => {
-          console.error('Error playing audio:', error);
-        });
+        await audioRef.current.load();
       }
+
+      // Start the game
+      onComplete(teams);
+
+      // Play the sound after a brief delay to ensure smooth transition
+      setTimeout(() => {
+        playStartSound();
+      }, 100);
     } catch (error) {
-      console.error('Error playing audio:', error);
+      console.error('Error during game start:', error);
+      // Still start the game even if audio fails
+      onComplete(teams);
     }
   };
 

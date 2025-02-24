@@ -6,7 +6,7 @@ import TeamPanel from './components/TeamPanel';
 import FileUpload from './components/FileUpload';
 import TeamSetup from './components/TeamSetup';
 import { Question, Team, GameState } from './types/game';
-import { Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { RotateCcw, Volume2, VolumeX } from 'lucide-react';
 
 const DEFAULT_GAME_STATE: GameState = {
   teams: [],

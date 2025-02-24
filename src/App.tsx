@@ -6,7 +6,7 @@ import TeamPanel from './components/TeamPanel';
 import FileUpload from './components/FileUpload';
 import TeamSetup from './components/TeamSetup';
 import { Question, Team, GameState } from './types/game';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Volume2, VolumeX } from 'lucide-react';
 
 const DEFAULT_GAME_STATE: GameState = {
   teams: [],
@@ -25,7 +25,8 @@ function App() {
   const [gameState, setGameState] = useState<GameState>(DEFAULT_GAME_STATE);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [gamePhase, setGamePhase] = useState<'upload' | 'setup' | 'play'>('upload');
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     const savedState = localStorage.getItem('jeopardyGameState');
@@ -39,17 +40,57 @@ function App() {
       }
     }
 
-    // Play the theme song when the app launches
+    // Set up audio
     if (audioRef.current) {
-      audioRef.current.play().catch(error => {
-        console.warn('Audio playback failed:', error);
+      audioRef.current.volume = 0.5; // Set a reasonable default volume
+      
+      // Try to play audio on first interaction with the page
+      const playAudio = () => {
+        if (audioRef.current && !isAudioMuted) {
+          audioRef.current.currentTime = 0;
+          audioRef.current.play().catch(error => {
+            console.warn('Audio playback failed:', error);
+          });
+        }
+      };
+
+      // Add event listeners for first interaction
+      const interactionEvents = ['click', 'touchstart'];
+      const handleFirstInteraction = () => {
+        playAudio();
+        // Remove event listeners after first interaction
+        interactionEvents.forEach(event => {
+          document.removeEventListener(event, handleFirstInteraction);
+        });
+      };
+
+      interactionEvents.forEach(event => {
+        document.addEventListener(event, handleFirstInteraction);
       });
+
+      // Cleanup
+      return () => {
+        interactionEvents.forEach(event => {
+          document.removeEventListener(event, handleFirstInteraction);
+        });
+      };
     }
-  }, []);
+  }, [isAudioMuted]);
 
   useEffect(() => {
     localStorage.setItem('jeopardyGameState', JSON.stringify(gameState));
   }, [gameState]);
+
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      if (isAudioMuted) {
+        audioRef.current.play().catch(console.warn);
+      } else {
+        audioRef.current.pause();
+      }
+      setIsAudioMuted(!isAudioMuted);
+    }
+  };
 
   const handleQuestionsLoad = (questions: Question[]) => {
     const categories = Array.from(new Set(questions.map((q) => q.category)));
@@ -121,7 +162,7 @@ function App() {
       localStorage.removeItem('jeopardyGameState');
       
       // Play the theme song again on restart
-      if (audioRef.current) {
+      if (audioRef.current && !isAudioMuted) {
         audioRef.current.currentTime = 0;
         audioRef.current.play().catch(error => {
           console.warn('Audio playback failed:', error);
@@ -154,16 +195,21 @@ function App() {
             />
           </div>
           <div className="flex-1 flex justify-end gap-4">
+            <button
+              onClick={toggleAudio}
+              className="p-2 rounded-full hover:bg-[#132F5F] transition-colors"
+              title={isAudioMuted ? "Unmute Audio" : "Mute Audio"}
+            >
+              {isAudioMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+            </button>
             {gamePhase !== 'upload' && (
-              <>
-                <button
-                  onClick={handleRestart}
-                  className="p-2 rounded-full hover:bg-[#132F5F] transition-colors"
-                  title="Restart Game"
-                >
-                  <RotateCcw size={24} />
-                </button>
-              </>
+              <button
+                onClick={handleRestart}
+                className="p-2 rounded-full hover:bg-[#132F5F] transition-colors"
+                title="Restart Game"
+              >
+                <RotateCcw size={24} />
+              </button>
             )}
           </div>
         </div>
@@ -222,8 +268,9 @@ function App() {
     >
       <audio
         ref={audioRef}
-        src="/sounds/this-is-jeopardy-1992-101soundboards.mp3"
+        src="/audio/this-is-jeopardy-1992-101soundboards.mp3"
         preload="auto"
+        loop
       />
       
       <div className="container mx-auto py-8">

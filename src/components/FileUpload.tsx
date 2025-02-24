@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Squircle, CircleCheck, Upload, X } from 'lucide-react';
+import { CircleCheck, Squircle, Upload } from 'lucide-react';
 import { Question } from '../types/game';
 
 interface FileUploadProps {

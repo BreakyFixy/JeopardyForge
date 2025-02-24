@@ -18,20 +18,16 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   onScoreChange,
 }) => {
   const [showAnswer, setShowAnswer] = useState(false);
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [attemptedTeams, setAttemptedTeams] = useState<Set<string>>(new Set());
-  const [showScoring, setShowScoring] = useState(false);
   const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
 
   const handleTeamSelect = (teamId: string) => {
-    setSelectedTeamId(teamId);
     setCurrentAttemptId(teamId);
   };
 
   const handleShowAnswer = () => {
     setShowAnswer(true);
-    setShowScoring(false);
     onAnswered();
   };
 
@@ -58,7 +54,6 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
       if (remainingTeams.length > 0) {
         // Reset for next team's attempt
         setCurrentAttemptId(null);
-        setShowScoring(false);
       } else {
         // If no teams left, show answer
         handleShowAnswer();

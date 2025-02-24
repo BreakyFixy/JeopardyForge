@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import GameBoard from './components/GameBoard';
 import QuestionModal from './components/QuestionModal';
@@ -14,8 +14,8 @@ const DEFAULT_GAME_STATE: GameState = {
   categories: [],
   title: 'LSC Jeopardy',
   settings: {
-    backgroundColor: '#1A365D', // Updated to new dark blue
-    textColor: '#EDF2EF', // Updated to new off-white
+    backgroundColor: '#1A365D',
+    textColor: '#EDF2EF',
     fontFamily: 'Inter',
     soundEnabled: true,
   },
@@ -25,6 +25,7 @@ function App() {
   const [gameState, setGameState] = useState<GameState>(DEFAULT_GAME_STATE);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [gamePhase, setGamePhase] = useState<'upload' | 'setup' | 'play'>('upload');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const savedState = localStorage.getItem('jeopardyGameState');
@@ -36,6 +37,13 @@ function App() {
       } else if (parsed.questions.length > 0) {
         setGamePhase('setup');
       }
+    }
+
+    // Play the theme song when the app launches
+    if (audioRef.current) {
+      audioRef.current.play().catch(error => {
+        console.warn('Audio playback failed:', error);
+      });
     }
   }, []);
 
@@ -111,6 +119,14 @@ function App() {
       setGamePhase('upload');
       setSelectedQuestion(null);
       localStorage.removeItem('jeopardyGameState');
+      
+      // Play the theme song again on restart
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(error => {
+          console.warn('Audio playback failed:', error);
+        });
+      }
     }
   };
 
@@ -128,7 +144,7 @@ function App() {
           </div>
         )}
         <div className="flex items-center justify-between w-full">
-          <div className="flex-1" /> {/* Spacer */}
+          <div className="flex-1" />
           <div className="flex-1 flex justify-center">
             <input
               type="text"
@@ -147,7 +163,7 @@ function App() {
                 >
                   <RotateCcw size={24} />
                 </button>
-                </>
+              </>
             )}
           </div>
         </div>
@@ -204,6 +220,12 @@ function App() {
         fontFamily: gameState.settings.fontFamily,
       }}
     >
+      <audio
+        ref={audioRef}
+        src="/sounds/this-is-jeopardy-1992-101soundboards.mp3"
+        preload="auto"
+      />
+      
       <div className="container mx-auto py-8">
         {renderHeader()}
         {renderGameContent()}

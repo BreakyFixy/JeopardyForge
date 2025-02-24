@@ -1,14 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { Upload, X } from 'lucide-react';
+import { Squircle, CircleCheck, Upload, X } from 'lucide-react';
 import { Question } from '../types/game';
 
 interface FileUploadProps {
   onQuestionsLoad: (questions: Question[]) => void;
-}
-
-interface PreviewData {
-  headers: string[];
-  rows: string[][];
 }
 
 interface ValidationError {
@@ -16,11 +11,17 @@ interface ValidationError {
   details?: string[];
 }
 
+interface UploadStatus {
+  success: boolean;
+  message: string;
+  details?: string[];
+  questionCount?: number;
+  categoryCount?: number;
+}
+
 const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
   const fileInput = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<PreviewData | null>(null);
-  const [parsedQuestions, setParsedQuestions] = useState<Question[] | null>(null);
-  const [error, setError] = useState<ValidationError | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
@@ -201,29 +202,17 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
     return questions;
   };
 
-  const generatePreview = (text: string): PreviewData => {
-    const lines = text.split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
-    const headers = lines[0].split(',').map(header => header.trim());
-    const previewRows = lines
-      .slice(1)
-      .map(line => line.split(',').map(cell => cell.trim()));
-    return { headers, rows: previewRows };
-  };
-
   const processFile = async (file: File) => {
     if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
-      setError({
+      setUploadStatus({
+        success: false,
         message: 'Invalid file type',
         details: ['Please upload a CSV file.']
       });
       return;
     }
 
-    setError(null);
-    setParsedQuestions(null);
-    setPreview(null);
+    setUploadStatus(null);
 
     const reader = new FileReader();
     reader.onload = async (evt) => {
@@ -236,21 +225,30 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
 
       const validationError = await validateCSV(lines);
       if (validationError) {
-        setError(validationError);
+        setUploadStatus({
+          success: false,
+          message: validationError.message,
+          details: validationError.details
+        });
         if (fileInput.current) {
           fileInput.current.value = '';
         }
         return;
       }
 
-      const preview = generatePreview(text);
-      setPreview(preview);
-      
       const questions = parseCSV(text);
       if (questions.length > 0) {
-        setParsedQuestions(questions);
+        const categories = Array.from(new Set(questions.map(q => q.category)));
+        setUploadStatus({
+          success: true,
+          message: 'CSV file successfully uploaded!',
+          questionCount: questions.length,
+          categoryCount: categories.length
+        });
+        onQuestionsLoad(questions);
       } else {
-        setError({
+        setUploadStatus({
+          success: false,
           message: 'No valid questions found in the CSV file.',
           details: ['Please ensure the file follows the correct format.']
         });
@@ -293,7 +291,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
 
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 1) {
-      setError({
+      setUploadStatus({
+        success: false,
         message: 'Multiple files detected',
         details: ['Please upload only one CSV file at a time.']
       });
@@ -310,160 +309,108 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
     await processFile(file);
   };
 
-  const handleConfirmLoad = () => {
-    if (parsedQuestions) {
-      onQuestionsLoad(parsedQuestions);
-      setPreview(null);
-      setParsedQuestions(null);
-      setError(null);
-    }
-  };
-
-  const handleCancelLoad = () => {
-    setPreview(null);
-    setParsedQuestions(null);
-    setError(null);
-    if (fileInput.current) {
-      fileInput.current.value = '';
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-center px-4">
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 max-w-4xl w-full">
-          <h3 className="font-semibold mb-2">{error.message}</h3>
-          {error.details && (
-            <ul className="list-disc list-inside space-y-1">
-              {error.details.map((detail, index) => (
-                <li key={index} className="text-sm">{detail}</li>
-              ))}
-            </ul>
+      {uploadStatus && (
+        <div
+          className={`mb-6 p-6 rounded-lg max-w-4xl w-full ${
+            uploadStatus.success
+              ? 'bg-green-50 border border-green-200 text-green-700'
+              : 'bg-red-50 border border-red-200 text-red-700'
+          }`}
+        >
+          <div className="flex items-center gap-3 mb-2">
+            {uploadStatus.success ? (
+              <CircleCheck className="h-6 w-6" />
+            ) : (
+              <Squircle className="h-6 w-6" />
+            )}
+            <h3 className="text-lg font-semibold">{uploadStatus.message}</h3>
+          </div>
+          
+          {uploadStatus.success ? (
+            <div className="mt-2 text-green-600">
+              <p>Successfully loaded:</p>
+              <ul className="list-disc list-inside mt-1">
+                <li>{uploadStatus.categoryCount} categories</li>
+                <li>{uploadStatus.questionCount} questions</li>
+              </ul>
+            </div>
+          ) : (
+            uploadStatus.details && (
+              <ul className="list-disc list-inside space-y-1 mt-2">
+                {uploadStatus.details.map((detail, index) => (
+                  <li key={index} className="text-sm">{detail}</li>
+                ))}
+              </ul>
+            )
           )}
         </div>
       )}
 
-      {!preview ? (
-        <div className="max-w-4xl w-full">
-          <div
-            className={`relative border-2 border-dashed rounded-lg p-12 cursor-pointer transition-all duration-200 ${
-              isDragging 
-                ? 'border-[#FFB411] bg-[#8499B1]/10' 
-                : 'border-[#8499B1] hover:border-[#FFB411]'
-            }`}
-            onClick={() => fileInput.current?.click()}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            {isDragging && (
-              <div className="absolute inset-0 bg-[#8499B1]/10 rounded-lg flex items-center justify-center">
-                <div className="text-2xl font-semibold text-[#FFB411]">
-                  Drop your CSV file here
-                </div>
-              </div>
-            )}
-            
-            <Upload className="mx-auto h-16 w-16 text-[#8499B1] mb-6" />
-            <h2 className="text-2xl font-semibold mb-6 text-center text-[#EDF2EF]">
-              Drop your CSV file here or click to browse
-            </h2>
-            
-            <div className="max-w-2xl mx-auto bg-[#8499B1]/10 p-8 rounded-lg">
-              <h3 className="text-xl font-medium text-[#EDF2EF] mb-4 text-left">CSV Format Instructions:</h3>
-              <ul className="space-y-4 text-lg text-[#EDF2EF] text-left">
-                <li className="flex items-start">
-                  <span className="font-medium mr-2">Row 1:</span> Category names (any number of columns)
-                </li>
-                <li className="flex items-start">
-                  <span className="font-medium mr-2">Following rows:</span> Must be in sets of three:
-                </li>
-                <li className="ml-8 text-base">1. Question text for each category</li>
-                <li className="ml-8 text-base">2. Answer text for each category</li>
-                <li className="ml-8 text-base">3. Include an Image URL or type the word "none" in the cell</li>
-              </ul>
-              <div className="mt-6 text-[#EDF2EF] text-base">
-                OR you can download the Game Template CSV file by clicking{' '}
-                <a 
-                  href="/Jeopardy_Upload_Template.csv" 
-                  download
-                  className="text-[#FFB411] hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  here
-                </a>
+      <div className="max-w-4xl w-full">
+        <div
+          className={`relative border-2 border-dashed rounded-lg p-12 cursor-pointer transition-all duration-200 ${
+            isDragging 
+              ? 'border-[#FFB411] bg-[#8499B1]/10' 
+              : 'border-[#8499B1] hover:border-[#FFB411]'
+          }`}
+          onClick={() => fileInput.current?.click()}
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {isDragging ? (
+            <div className="absolute inset-0 bg-[#8499B1]/10 rounded-lg flex items-center justify-center">
+              <div className="text-2xl font-semibold text-[#FFB411]">
+                Drop your CSV file here
               </div>
             </div>
-            
-            <input
-              type="file"
-              ref={fileInput}
-              onChange={handleFileUpload}
-              accept=".csv"
-              className="hidden"
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="bg-[#8499B1] rounded-lg shadow-lg p-8 max-w-4xl w-full">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-semibold text-[#EDF2EF]">Preview</h3>
-            <button
-              onClick={handleCancelLoad}
-              className="text-[#EDF2EF] hover:text-[#1A365D] p-2"
-            >
-              <X size={24} />
-            </button>
-          </div>
+          ) : (
+            <>
+              <Upload className="mx-auto h-16 w-16 text-[#8499B1] mb-6" />
+              <h2 className="text-2xl font-semibold mb-6 text-center text-[#EDF2EF]">
+                Drop your CSV file here or click to browse
+              </h2>
+              
+              <div className="max-w-2xl mx-auto bg-[#8499B1]/10 p-8 rounded-lg">
+                <h3 className="text-xl font-medium text-[#EDF2EF] mb-4 text-left">CSV Format Instructions:</h3>
+                <ul className="space-y-4 text-lg text-[#EDF2EF] text-left">
+                  <li className="flex items-start">
+                    <span className="font-medium mr-2">Row 1:</span> Category names (any number of columns)
+                  </li>
+                  <li className="flex items-start">
+                    <span className="font-medium mr-2">Following rows:</span> Must be in sets of three:
+                  </li>
+                  <li className="ml-8 text-base">1. Question text for each category</li>
+                  <li className="ml-8 text-base">2. Answer text for each category</li>
+                  <li className="ml-8 text-base">3. Include an Image URL or type the word "none" in the cell</li>
+                </ul>
+                <div className="mt-6 text-[#EDF2EF] text-base">
+                  OR you can download the Game Template CSV file by clicking{' '}
+                  <a 
+                    href="/Jeopardy_Upload_Template.csv" 
+                    download
+                    className="text-[#FFB411] hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    here
+                  </a>
+                </div>
+              </div>
+            </>
+          )}
           
-          <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-            <table className="min-w-full divide-y divide-[#1A365D]">
-              <thead className="sticky top-0 bg-[#1A365D]">
-                <tr>
-                  {preview.headers.map((header, index) => (
-                    <th
-                      key={index}
-                      className="px-6 py-4 text-left text-base font-semibold text-[#EDF2EF] uppercase tracking-wider"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-[#8499B1] divide-y divide-[#1A365D]">
-                {preview.rows.map((row, rowIndex) => (
-                  <tr key={rowIndex} className={rowIndex % 3 === 0 ? 'bg-[#1A365D]/20' : rowIndex % 3 === 1 ? 'bg-[#1A365D]/10' : 'bg-[#1A365D]/5'}>
-                    {row.map((cell, cellIndex) => (
-                      <td
-                        key={cellIndex}
-                        className="px-6 py-4 whitespace-nowrap text-base text-[#EDF2EF]"
-                      >
-                        {cell}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-8 flex justify-end space-x-4">
-            <button
-              onClick={handleCancelLoad}
-              className="px-6 py-3 text-lg border border-[#EDF2EF] rounded-md text-[#EDF2EF] hover:bg-[#1A365D] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleConfirmLoad}
-              className="px-6 py-3 text-lg bg-[#1A365D] text-[#EDF2EF] rounded-md hover:bg-[#FFB411] hover:text-[#1A365D] transition-colors"
-            >
-              Load Questions
-            </button>
-          </div>
+          <input
+            type="file"
+            ref={fileInput}
+            onChange={handleFileUpload}
+            accept=".csv"
+            className="hidden"
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -6,7 +6,7 @@ import TeamPanel from './components/TeamPanel';
 import FileUpload from './components/FileUpload';
 import TeamSetup from './components/TeamSetup';
 import { Question, Team, GameState } from './types/game';
-import { RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 
 const DEFAULT_GAME_STATE: GameState = {
   teams: [],
@@ -26,6 +26,8 @@ function App() {
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [gamePhase, setGamePhase] = useState<'upload' | 'setup' | 'play'>('upload');
   const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [audioInitialized, setAudioInitialized] = useState(false);
+  const [showPlayButton, setShowPlayButton] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -40,46 +42,39 @@ function App() {
       }
     }
 
-    // Set up audio
+    // Initialize audio
     if (audioRef.current) {
-      audioRef.current.volume = 0.5; // Set a reasonable default volume
+      audioRef.current.volume = 0.5;
       
-      // Try to play audio on first interaction with the page
-      const playAudio = () => {
-        if (audioRef.current && !isAudioMuted) {
-          audioRef.current.currentTime = 0;
-          audioRef.current.play().catch(error => {
-            console.warn('Audio playback failed:', error);
-          });
-        }
-      };
-
-      // Add event listeners for first interaction
-      const interactionEvents = ['click', 'touchstart'];
-      const handleFirstInteraction = () => {
-        playAudio();
-        // Remove event listeners after first interaction
-        interactionEvents.forEach(event => {
-          document.removeEventListener(event, handleFirstInteraction);
+      // Try to play audio automatically
+      audioRef.current.play()
+        .then(() => {
+          setAudioInitialized(true);
+        })
+        .catch(() => {
+          // If autoplay fails, show the play button
+          setShowPlayButton(true);
         });
-      };
-
-      interactionEvents.forEach(event => {
-        document.addEventListener(event, handleFirstInteraction);
-      });
-
-      // Cleanup
-      return () => {
-        interactionEvents.forEach(event => {
-          document.removeEventListener(event, handleFirstInteraction);
-        });
-      };
     }
-  }, [isAudioMuted]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('jeopardyGameState', JSON.stringify(gameState));
   }, [gameState]);
+
+  const initializeAudio = () => {
+    if (audioRef.current && !audioInitialized) {
+      audioRef.current.play()
+        .then(() => {
+          setAudioInitialized(true);
+          setShowPlayButton(false);
+        })
+        .catch(error => {
+          console.warn('Audio playback failed:', error);
+          setShowPlayButton(true);
+        });
+    }
+  };
 
   const toggleAudio = () => {
     if (audioRef.current) {
@@ -108,6 +103,7 @@ function App() {
       teams,
     }));
     setGamePhase('play');
+    initializeAudio(); // Try to play audio when game starts
   };
 
   const handleQuestionAnswered = () => {
@@ -161,11 +157,12 @@ function App() {
       setSelectedQuestion(null);
       localStorage.removeItem('jeopardyGameState');
       
-      // Play the theme song again on restart
+      // Restart the theme song
       if (audioRef.current && !isAudioMuted) {
         audioRef.current.currentTime = 0;
         audioRef.current.play().catch(error => {
           console.warn('Audio playback failed:', error);
+          setShowPlayButton(true);
         });
       }
     }
@@ -195,6 +192,15 @@ function App() {
             />
           </div>
           <div className="flex-1 flex justify-end gap-4">
+            {showPlayButton && (
+              <button
+                onClick={initializeAudio}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFB411] text-[#1A365D] hover:bg-[#FFD700] transition-colors"
+                title="Play Theme Music"
+              >
+                Play Music
+              </button>
+            )}
             <button
               onClick={toggleAudio}
               className="p-2 rounded-full hover:bg-[#132F5F] transition-colors"

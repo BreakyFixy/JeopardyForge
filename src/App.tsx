@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { setSoundEnabled } from './utils/sounds';
 import './index.css';
 import GameBoard from './components/GameBoard';
 import QuestionModal from './components/QuestionModal';
@@ -47,6 +48,7 @@ function App() {
     }
 
     setIsAudioMuted(!soundEnabled);
+    setSoundEnabled(soundEnabled);
 
     if (audioRef.current) {
       audioRef.current.volume = 0.5;
@@ -89,6 +91,7 @@ function App() {
       ...prev,
       settings: { ...prev.settings, soundEnabled: !newMuted },
     }));
+    setSoundEnabled(!newMuted);
 
     if (audioRef.current) {
       if (newMuted) {
@@ -173,6 +176,7 @@ function App() {
 
       const shouldPlay = DEFAULT_GAME_STATE.settings.soundEnabled;
       setIsAudioMuted(!shouldPlay);
+      setSoundEnabled(shouldPlay);
 
       // Restart the theme song
       if (audioRef.current && shouldPlay) {

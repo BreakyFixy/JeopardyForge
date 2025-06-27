@@ -78,14 +78,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onQuestionsLoad }) => {
 
   const validateImageUrl = async (url: string): Promise<boolean> => {
     if (!url || url.trim() === '' || isNoneValue(url)) return true;
-    
+
     if (!isValidImageUrl(url)) {
       return false;
     }
 
     try {
-      await tryImageHeadRequest(url);
-      return true;
+      const result = await tryImageHeadRequest(url);
+      return result;
     } catch {
       return isValidImageUrl(url);
     }

@@ -167,7 +167,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
               </div>
             )}
 
-            {/* Show answer button - Only show if all teams have attempted or someone got it right */}
+            {/* Show Answer button - displayed when every team has tried and none answered correctly */}
             {!showAnswer && getAvailableTeams().length === 0 && (
               <button
                 onClick={handleShowAnswer}

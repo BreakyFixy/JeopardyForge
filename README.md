@@ -89,6 +89,27 @@ none,https://example.com/water.jpg,none
 - Resume games from where you left off
 - Reset game option available
 
+### Audio
+JeopardyForge includes theme music and sound effects to enhance gameplay. All
+audio files are located in `public/Sounds`:
+
+- `daily-double-101soundboards.mp3`
+- `jeopardy-ding-101soundboards.mp3`
+- `jeopardy-incorrect-101soundboards.mp3`
+- `jeopardy-think-101soundboards.mp3`
+- `this-is-jeopardy-1992-101soundboards.mp3`
+- `zapsplat_multimedia_click_button_short_sharp_73510.mp3`
+- `zapsplat_multimedia_game_sound_negative_error_fail_plonky_synth_002_81113.mp3`
+- `zapsplat_multimedia_ui_notification_classic_bell_synth_success_107505.mp3`
+
+Sound helpers let you play these effects from your components:
+
+```ts
+import { playSound } from './utils/sound';
+
+playSound('jeopardy-ding-101soundboards.mp3');
+```
+
 ## Technical Stack
 
 - React 18

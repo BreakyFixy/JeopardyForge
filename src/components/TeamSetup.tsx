@@ -92,7 +92,7 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
 
       <audio
         ref={audioRef}
-        src="/audio/this-is-jeopardy-1992-101soundboards.mp3"
+        src="/Sounds/this-is-jeopardy-1992-101soundboards.mp3"
         preload="auto"
       />
     </div>

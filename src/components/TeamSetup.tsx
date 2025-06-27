@@ -4,9 +4,10 @@ import { Plus, Trash2 } from 'lucide-react';
 
 interface TeamSetupProps {
   onComplete: (teams: Team[]) => void;
+  soundEnabled: boolean;
 }
 
-const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
+const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete, soundEnabled }) => {
   const [teams, setTeams] = useState<Team[]>([
     { id: '1', name: 'Team 1', score: 0 },
     { id: '2', name: 'Team 2', score: 0 },
@@ -38,8 +39,8 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
       return;
     }
 
-    // Play the theme song
-    if (audioRef.current) {
+    // Play the theme song if sound is enabled
+    if (audioRef.current && soundEnabled) {
       audioRef.current.play().catch(error => {
         console.warn('Audio playback failed:', error);
       });

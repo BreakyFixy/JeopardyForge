@@ -102,13 +102,15 @@ audio files are located in `public/Sounds`:
 - `zapsplat_multimedia_game_sound_negative_error_fail_plonky_synth_002_81113.mp3`
 - `zapsplat_multimedia_ui_notification_classic_bell_synth_success_107505.mp3`
 
-Sound helpers let you play these effects from your components:
+Sound helpers let you trigger effects from your React components:
 
 ```ts
-import { playSound } from './utils/sound';
+import { playCorrect } from './utils/sounds';
 
-playSound('jeopardy-ding-101soundboards.mp3');
+playCorrect();
 ```
+
+Use `setSoundEnabled(false)` to mute all effect playback.
 
 ## Technical Stack
 

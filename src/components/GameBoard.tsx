@@ -1,5 +1,6 @@
 import React from 'react';
 import { Question } from '../types/game';
+import { playClick } from '../utils/sounds';
 import { Image as ImageIcon } from 'lucide-react';
 
 interface GameBoardProps {
@@ -63,7 +64,12 @@ const GameBoard: React.FC<GameBoardProps> = ({ questions, categories, onQuestion
                 } text-[#EDF2EF] p-4 h-24 flex items-center justify-center text-3xl font-bold rounded-xl shadow-lg transition-all duration-200 border-2 ${
                   question && !question.isAnswered ? 'border-[#FFB411]/30' : 'border-[#1A365D]'
                 }`}
-                onClick={() => question && !question.isAnswered && onQuestionSelect(question)}
+                onClick={() => {
+                  if (question && !question.isAnswered) {
+                    playClick();
+                    onQuestionSelect(question);
+                  }
+                }}
                 disabled={!question || question.isAnswered}
               >
                 <div className="relative z-10 flex flex-col items-center gap-2">

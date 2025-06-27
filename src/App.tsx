@@ -25,16 +25,20 @@ function App() {
   const [gameState, setGameState] = useState<GameState>(DEFAULT_GAME_STATE);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [gamePhase, setGamePhase] = useState<'upload' | 'setup' | 'play'>('upload');
-  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(
+    !DEFAULT_GAME_STATE.settings.soundEnabled
+  );
   const [audioInitialized, setAudioInitialized] = useState(false);
   const [showPlayButton, setShowPlayButton] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     const savedState = localStorage.getItem('jeopardyGameState');
+    let soundEnabled = DEFAULT_GAME_STATE.settings.soundEnabled;
     if (savedState) {
       const parsed = JSON.parse(savedState);
       setGameState(parsed);
+      soundEnabled = parsed.settings.soundEnabled;
       if (parsed.questions.length > 0 && parsed.teams.length > 0) {
         setGamePhase('play');
       } else if (parsed.questions.length > 0) {
@@ -42,19 +46,21 @@ function App() {
       }
     }
 
-    // Initialize audio
+    setIsAudioMuted(!soundEnabled);
+
     if (audioRef.current) {
       audioRef.current.volume = 0.5;
-      
-      // Try to play audio automatically
-      audioRef.current.play()
-        .then(() => {
-          setAudioInitialized(true);
-        })
-        .catch(() => {
-          // If autoplay fails, show the play button
-          setShowPlayButton(true);
-        });
+      if (soundEnabled) {
+        audioRef.current
+          .play()
+          .then(() => {
+            setAudioInitialized(true);
+          })
+          .catch(() => {
+            // If autoplay fails, show the play button
+            setShowPlayButton(true);
+          });
+      }
     }
   }, []);
 
@@ -77,13 +83,19 @@ function App() {
   };
 
   const toggleAudio = () => {
+    const newMuted = !isAudioMuted;
+    setIsAudioMuted(newMuted);
+    setGameState(prev => ({
+      ...prev,
+      settings: { ...prev.settings, soundEnabled: !newMuted },
+    }));
+
     if (audioRef.current) {
-      if (isAudioMuted) {
-        audioRef.current.play().catch(console.warn);
-      } else {
+      if (newMuted) {
         audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch(console.warn);
       }
-      setIsAudioMuted(!isAudioMuted);
     }
   };
 
@@ -103,7 +115,9 @@ function App() {
       teams,
     }));
     setGamePhase('play');
-    initializeAudio(); // Try to play audio when game starts
+    if (!isAudioMuted) {
+      initializeAudio(); // Try to play audio when game starts
+    }
   };
 
   const handleQuestionAnswered = () => {
@@ -156,9 +170,12 @@ function App() {
       setGamePhase('upload');
       setSelectedQuestion(null);
       localStorage.removeItem('jeopardyGameState');
-      
+
+      const shouldPlay = DEFAULT_GAME_STATE.settings.soundEnabled;
+      setIsAudioMuted(!shouldPlay);
+
       // Restart the theme song
-      if (audioRef.current && !isAudioMuted) {
+      if (audioRef.current && shouldPlay) {
         audioRef.current.currentTime = 0;
         audioRef.current.play().catch(error => {
           console.warn('Audio playback failed:', error);
@@ -228,7 +245,12 @@ function App() {
       case 'upload':
         return <FileUpload onQuestionsLoad={handleQuestionsLoad} />;
       case 'setup':
-        return <TeamSetup onComplete={handleTeamsSetup} />;
+        return (
+          <TeamSetup
+            onComplete={handleTeamsSetup}
+            soundEnabled={!isAudioMuted}
+          />
+        );
       case 'play':
         return (
           <div className="flex flex-col lg:flex-row gap-8">

@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Question, Team } from '../types/game';
 import { Check, X } from 'lucide-react';
+import {
+  playCorrect,
+  playIncorrect,
+  playThinkMusic,
+  stopThinkMusic,
+} from '../utils/sounds';
 
 interface QuestionModalProps {
   question: Question;
@@ -22,11 +28,19 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
   const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
 
+  useEffect(() => {
+    playThinkMusic();
+    return () => {
+      stopThinkMusic();
+    };
+  }, []);
+
   const handleTeamSelect = (teamId: string) => {
     setCurrentAttemptId(teamId);
   };
 
   const handleShowAnswer = () => {
+    stopThinkMusic();
     setShowAnswer(true);
     onAnswered();
   };
@@ -41,11 +55,14 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
 
     if (correct) {
       // If correct, award points and end the question
+      stopThinkMusic();
+      playCorrect();
       onScoreChange(currentAttemptId, question.points);
       onAnswered();
       onClose();
     } else {
       // If incorrect, deduct points from current team
+      playIncorrect();
       onScoreChange(currentAttemptId, -question.points);
       
       // Find teams that haven't attempted yet
@@ -69,7 +86,10 @@ const QuestionModal: React.FC<QuestionModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
       <div className="bg-[#1A365D] rounded-xl max-w-4xl w-full p-8 relative shadow-2xl overflow-y-auto max-h-[90vh]">
         <button
-          onClick={onClose}
+          onClick={() => {
+            stopThinkMusic();
+            onClose();
+          }}
           className="absolute top-4 right-4 text-[#EDF2EF] hover:text-[#8499B1] transition-colors z-10"
         >
           <X size={24} />

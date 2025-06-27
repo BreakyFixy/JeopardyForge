@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "dependencies": {
     "lucide-react": "^0.453.0",
@@ -23,6 +24,9 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.5.3",
-    "vite": "^5.4.6"
+    "vite": "^5.4.6",
+    "vitest": "^1.5.3",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/jest-dom": "^6.4.1"
   }
 }
